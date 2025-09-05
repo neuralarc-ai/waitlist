@@ -12,14 +12,14 @@ const HeliumLogo = ({ className = "" }: { className?: string }) => {
           <Image
             src="/assets/logo-light.svg"
             alt="Helium Logo"
-            width={60}
-            height={60}
+            width={40}
+            height={40}
             className="mr-3"
           />
         </div>
         
         {/* Text */}
-        <h1 className="text-5xl font-semibold text-white" style={{ fontFamily: 'var(--font-fustat)' }}>
+        <h1 className="text-5xl font-medium text-white" style={{ fontFamily: 'var(--font-fustat)' }}>
           Helium
         </h1>
       </div>

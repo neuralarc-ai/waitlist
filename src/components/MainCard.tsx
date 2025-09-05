@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { Button } from "@/components/ui/button"
+import { supabase } from "@/lib/supabase"
 import {
   Select,
   SelectContent,
@@ -19,7 +20,7 @@ const formSchema = z.object({
   firstName: z.string().min(1, "First name is required").min(2, "First name must be at least 2 characters"),
   lastName: z.string().min(1, "Last name is required").min(2, "Last name must be at least 2 characters"),
   company: z.string().min(1, "Company is required").min(2, "Company name must be at least 2 characters"),
-  website: z.string().url("Please enter a valid website URL").optional().or(z.literal("")),
+  email: z.string().email("Please enter a valid email address"),
   reference: z.string().min(1, "Please select how you heard about us"),
 })
 
@@ -36,9 +37,36 @@ const MainCard = () => {
     mode: "onBlur",
   })
 
-  const onSubmit = (data: FormData) => {
-    console.log("Form submitted:", data)
-    // Handle form submission here
+  const onSubmit = async (data: FormData) => {
+    try {
+      const { error } = await supabase
+        .from('helium-waitlist')
+        .insert([
+          {
+            first_name: data.firstName,
+            last_name: data.lastName,
+            company: data.company,
+            email: data.email,
+            reference: data.reference,
+            created_at: new Date().toISOString(),
+            user_agent: navigator.userAgent,
+            ip_address: null, // Will be handled by Supabase RLS if needed
+          }
+        ])
+
+      if (error) {
+        console.error('Error saving to Supabase:', error)
+        alert('There was an error submitting the form. Please try again.')
+      } else {
+        console.log('Form submitted successfully!')
+        alert('Thank you for joining the waitlist!')
+        // Reset form after successful submission
+        window.location.reload()
+      }
+    } catch (error) {
+      console.error('Unexpected error:', error)
+      alert('There was an unexpected error. Please try again.')
+    }
   }
   return (
     <div className="relative w-full max-w-2xl mx-auto pointer-events-none">
@@ -131,17 +159,17 @@ const MainCard = () => {
               </div>
             </div>
             <div className="space-y-2">
-              <label htmlFor="website" className="block text-base font-semibold text-black" style={{ fontFamily: 'var(--font-fustat)' }}>
-                Website
+              <label htmlFor="email" className="block text-base font-semibold text-black" style={{ fontFamily: 'var(--font-fustat)' }}>
+                Email
               </label>
               <div className="relative">
                 <input
-                  {...register("website")}
-                  type="url"
-                  id="website"
-                  placeholder={errors.website?.message || "Enter your website"}
+                  {...register("email")}
+                  type="email"
+                  id="email"
+                  placeholder={errors.email?.message || "Enter your email"}
                   className={`w-full px-6 py-6 bg-black/5 rounded-full text-black placeholder-black/50 pointer-events-auto ${
-                    errors.website ? 'placeholder-red-500 border border-red-500' : ''
+                    errors.email ? 'placeholder-red-500 border border-red-500' : ''
                   }`}
                 />
               </div>

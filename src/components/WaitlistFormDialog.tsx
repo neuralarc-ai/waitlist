@@ -11,6 +11,15 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { supabase } from "@/lib/supabase"
+import { useToast } from "@/hooks/use-toast"
 
 interface WaitlistFormDialogProps {
   open: boolean
@@ -18,26 +27,85 @@ interface WaitlistFormDialogProps {
 }
 
 const WaitlistFormDialog = ({ open, onOpenChange }: WaitlistFormDialogProps) => {
+  const { toast } = useToast()
   const [formData, setFormData] = useState({
-    name: "",
+    fullName: "",
     email: "",
     company: "",
     reference: "",
+    referralSource: "",
+    referralSourceOther: "",
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Here you would typically send the data to your backend
-    console.log("Waitlist form submitted:", formData)
-    // Reset form and close dialog
-    setFormData({ name: "", email: "", company: "", reference: "" })
-    onOpenChange(false)
-    // You could add a success toast here
+    
+    try {
+      const { error } = await supabase
+        .from('waitlist')
+        .insert([
+          {
+            full_name: formData.fullName,
+            company: formData.company,
+            email: formData.email,
+            reference: formData.reference,
+            referral_source: formData.referralSource,
+            referral_source_other: formData.referralSourceOther,
+            user_agent: navigator.userAgent,
+            ip_address: null, // Will be handled by Supabase RLS if needed
+          }
+        ])
+
+      if (error) {
+        console.error('Error saving to Supabase:', error)
+        console.error('Error details:', JSON.stringify(error, null, 2))
+        
+        // Handle specific error cases
+        if (error.code === '23505' && error.message.includes('email')) {
+          toast({
+            variant: "destructive",
+            title: "Email Already Registered",
+            description: "This email address is already registered. Please use a different email or check if you've already joined the waitlist.",
+          })
+        } else {
+          toast({
+            variant: "destructive",
+            title: "Submission Error",
+            description: error.message || 'Unknown error occurred',
+          })
+        }
+      } else {
+        console.log('Form submitted successfully!')
+        toast({
+          variant: "success",
+          title: "Welcome to the Waitlist!",
+          description: "Thank you for joining the waitlist. We'll notify you when Helium is ready.",
+        })
+        // Reset form and close dialog
+        setFormData({ fullName: "", email: "", company: "", reference: "", referralSource: "", referralSourceOther: "" })
+        onOpenChange(false)
+      }
+    } catch (error) {
+      console.error('Unexpected error:', error)
+      toast({
+        variant: "destructive",
+        title: "Unexpected Error",
+        description: "There was an unexpected error. Please try again.",
+      })
+    }
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
+  }
+
+  const handleSelectChange = (value: string) => {
+    setFormData(prev => ({ ...prev, referralSource: value }))
+  }
+
+  const handleOtherInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({ ...prev, referralSourceOther: e.target.value }))
   }
 
   return (
@@ -54,15 +122,15 @@ const WaitlistFormDialog = ({ open, onOpenChange }: WaitlistFormDialogProps) => 
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name" className="text-sm font-medium text-gray-700">
+            <Label htmlFor="fullName" className="text-sm font-medium text-gray-700">
               Full Name
             </Label>
             <Input
-              id="name"
-              name="name"
+              id="fullName"
+              name="fullName"
               type="text"
               placeholder="Enter your full name"
-              value={formData.name}
+              value={formData.fullName}
               onChange={handleInputChange}
               required
               className="bg-white/80 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20"
@@ -114,6 +182,34 @@ const WaitlistFormDialog = ({ open, onOpenChange }: WaitlistFormDialogProps) => 
               onChange={handleInputChange}
               className="bg-white/80 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20"
             />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="referralSource" className="text-sm font-medium text-gray-700">
+              References
+            </Label>
+            <Select onValueChange={handleSelectChange}>
+              <SelectTrigger className="bg-white/80 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20">
+                <SelectValue placeholder="Select how you found us" />
+              </SelectTrigger>
+              <SelectContent className="bg-white/80 backdrop-blur-3xl border-gray-200">
+                <SelectItem value="google-search">Google/Search Engine</SelectItem>
+                <SelectItem value="social-media">Social Media</SelectItem>
+                <SelectItem value="event">Event</SelectItem>
+                <SelectItem value="community">Community</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
+              </SelectContent>
+            </Select>
+            {formData.referralSource === "other" && (
+              <Input
+                name="referralSourceOther"
+                type="text"
+                placeholder="Please specify..."
+                value={formData.referralSourceOther}
+                onChange={handleOtherInputChange}
+                className="bg-white/80 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20"
+              />
+            )}
           </div>
           
           <Button 

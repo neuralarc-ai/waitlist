@@ -14,41 +14,49 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { useToast } from "@/hooks/use-toast"
 
 // Zod validation schema
 const formSchema = z.object({
-  firstName: z.string().min(1, "First name is required").min(2, "First name must be at least 2 characters"),
-  lastName: z.string().min(1, "Last name is required").min(2, "Last name must be at least 2 characters"),
+  fullName: z.string().min(1, "Full name is required").min(2, "Full name must be at least 2 characters"),
   company: z.string().min(1, "Company is required").min(2, "Company name must be at least 2 characters"),
   email: z.string().email("Please enter a valid email address"),
   reference: z.string().min(1, "Please select how you heard about us"),
+  referralSource: z.string().min(1, "Please select a reference option"),
+  referralSourceOther: z.string().optional(),
 })
 
 type FormData = z.infer<typeof formSchema>
 
 const MainCard = () => {
+  const { toast } = useToast()
   const {
     register,
     handleSubmit,
     formState: { errors },
     setValue,
+    watch,
   } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     mode: "onBlur",
   })
 
+  const referralSourceValue = watch("referralSource")
+
   const onSubmit = async (data: FormData) => {
     try {
+      console.log('Form data being submitted:', data)
+      
       const { error } = await supabase
-        .from('helium-waitlist')
+        .from('waitlist')
         .insert([
           {
-            first_name: data.firstName,
-            last_name: data.lastName,
+            full_name: data.fullName,
             company: data.company,
             email: data.email,
             reference: data.reference,
-            created_at: new Date().toISOString(),
+            referral_source: data.referralSource,
+            referral_source_other: data.referralSourceOther,
             user_agent: navigator.userAgent,
             ip_address: null, // Will be handled by Supabase RLS if needed
           }
@@ -56,16 +64,39 @@ const MainCard = () => {
 
       if (error) {
         console.error('Error saving to Supabase:', error)
-        alert('There was an error submitting the form. Please try again.')
+        console.error('Error details:', JSON.stringify(error, null, 2))
+        
+        // Handle specific error cases
+        if (error.code === '23505' && error.message.includes('email')) {
+          toast({
+            variant: "destructive",
+            title: "Email Already Registered",
+            description: "This email address is already registered. Please use a different email or check if you've already joined the waitlist.",
+          })
+        } else {
+          toast({
+            variant: "destructive",
+            title: "Submission Error",
+            description: error.message || 'Unknown error occurred',
+          })
+        }
       } else {
         console.log('Form submitted successfully!')
-        alert('Thank you for joining the waitlist!')
+        toast({
+          variant: "success",
+          title: "Welcome to the Waitlist!",
+          description: "Thank you for joining the waitlist. We'll notify you when Helium is ready.",
+        })
         // Reset form after successful submission
         window.location.reload()
       }
     } catch (error) {
       console.error('Unexpected error:', error)
-      alert('There was an unexpected error. Please try again.')
+      toast({
+        variant: "destructive",
+        title: "Unexpected Error",
+        description: "There was an unexpected error. Please try again.",
+      })
     }
   }
   return (
@@ -104,43 +135,25 @@ const MainCard = () => {
             Join the waitlist
           </h2>
           
-          {/* Name Fields - Side by Side */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label htmlFor="firstName" className="block text-base font-semibold text-black" style={{ fontFamily: 'var(--font-fustat)' }}>
-                First Name
-              </label>
-              <div className="relative">
-                <input
-                  {...register("firstName")}
-                  type="text"
-                  id="firstName"
-                  placeholder={errors.firstName?.message || "Enter your first name"}
-                  className={`w-full px-6 py-6 bg-black/5 rounded-full text-black placeholder-black/50 pointer-events-auto ${
-                    errors.firstName ? 'placeholder-red-500 border border-red-500' : ''
-                  }`}
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="lastName" className="block text-base font-semibold text-black" style={{ fontFamily: 'var(--font-fustat)' }}>
-                Last Name
-              </label>
-              <div className="relative">
-                <input
-                  {...register("lastName")}
-                  type="text"
-                  id="lastName"
-                  placeholder={errors.lastName?.message || "Enter your last name"}
-                  className={`w-full px-6 py-6 bg-black/5 rounded-full text-black placeholder-black/50 pointer-events-auto ${
-                    errors.lastName ? 'placeholder-red-500 border border-red-500' : ''
-                  }`}
-                />
-              </div>
+          {/* Name Field */}
+          <div className="space-y-2">
+            <label htmlFor="fullName" className="block text-base font-semibold text-black" style={{ fontFamily: 'var(--font-fustat)' }}>
+              Full Name
+            </label>
+            <div className="relative">
+              <input
+                {...register("fullName")}
+                type="text"
+                id="fullName"
+                placeholder={errors.fullName?.message || "Enter your full name"}
+                className={`w-full px-6 py-6 bg-black/5 rounded-full text-black placeholder-black/50 pointer-events-auto ${
+                  errors.fullName ? 'placeholder-red-500 border border-red-500' : ''
+                }`}
+              />
             </div>
           </div>
           
-          {/* Company and Website Fields - Side by Side */}
+          {/* Company and Email Fields - Side by Side */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <label htmlFor="company" className="block text-base font-semibold text-black" style={{ fontFamily: 'var(--font-fustat)' }}>
@@ -188,8 +201,30 @@ const MainCard = () => {
                 <SelectValue placeholder={errors.reference?.message || "Select an option"} />
               </SelectTrigger>
               <SelectContent className="bg-white/80 backdrop-blur-3xl border-gray-200 rounded-2xl">
-                <SelectItem value="social-media" className="text-black hover:bg-gray-100 rounded-xl py-2">Ideas2Impacts</SelectItem>
-                <SelectItem value="other" className="text-black hover:bg-gray-100 rounded-xl py-2">Other</SelectItem>
+                <SelectItem value="Ideas2Impact" className="text-black hover:bg-gray-100 rounded-xl py-2">Ideas2Impact</SelectItem>
+                <SelectItem value="Other" className="text-black hover:bg-gray-100 rounded-xl py-2">Other</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          {/* References Dropdown */}
+          <div className="space-y-2">
+            <label htmlFor="referralSource" className="block text-base font-semibold text-black" style={{ fontFamily: 'var(--font-fustat)' }}>
+              References
+            </label>
+            <Select onValueChange={(value) => setValue("referralSource", value)}>
+              <SelectTrigger className={`w-full px-6 py-8 bg-black/5 rounded-full text-black pointer-events-auto shadow-none ${
+                errors.referralSource ? 'border border-red-500' : ''
+              }`}>
+                <SelectValue placeholder={errors.referralSource?.message || "Select how you found us"} />
+              </SelectTrigger>
+              <SelectContent className="bg-white/80 backdrop-blur-3xl border-gray-200 rounded-2xl">
+                <SelectItem value="google-search" className="text-black hover:bg-gray-100 rounded-xl py-2">Google/Search Engine</SelectItem>
+                <SelectItem value="social-media" className="text-black hover:bg-gray-100 rounded-xl py-2">Social Media</SelectItem>
+                <SelectItem value="event" className="text-black hover:bg-gray-100 rounded-xl py-2">Event</SelectItem>
+                <SelectItem value="community" className="text-black hover:bg-gray-100 rounded-xl py-2">Community</SelectItem>
+                <SelectItem value="newsletter" className="text-black hover:bg-gray-100 rounded-xl py-2">Newsletter</SelectItem>
+                <SelectItem value="work-recommendation" className="text-black hover:bg-gray-100 rounded-xl py-2">Work Recommendation</SelectItem>
               </SelectContent>
             </Select>
           </div>

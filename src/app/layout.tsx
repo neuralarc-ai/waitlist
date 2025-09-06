@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Fustat, Libre_Baskerville } from "next/font/google";
 import "./globals.css";
+import { Toaster } from "@/components/ui/toaster";
 
 const fustat = Fustat({
   variable: "--font-fustat",
@@ -29,6 +30,7 @@ export default function RootLayout({
         className={`${fustat.variable} ${libreBaskerville.variable} antialiased bg-black text-white`}
       >
         {children}
+        <Toaster />
       </body>
     </html>
   );

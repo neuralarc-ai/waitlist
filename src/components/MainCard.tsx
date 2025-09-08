@@ -23,7 +23,7 @@ const formSchema = z.object({
   company: z.string().min(1, "Company is required").min(2, "Company name must be at least 2 characters"),
   email: z.string().email("Please enter a valid email address"),
   reference: z.string().min(1, "Please select how you heard about us"),
-  referralSource: z.string().min(1, "Please select a reference option"),
+  referralSource: z.string().optional(),
   referralSourceOther: z.string().optional(),
 })
 
@@ -44,6 +44,7 @@ const MainCard = () => {
   })
 
   const referralSourceValue = watch("referralSource")
+  const referenceValue = watch("reference")
 
   const onSubmit = async (data: FormData) => {
     try {
@@ -108,8 +109,7 @@ const MainCard = () => {
   }
 
   const handleOkayClick = () => {
-    setShowThankYou(false)
-    window.location.reload()
+    window.location.href = 'https://neuralarc.ai'
   }
 
   return (
@@ -271,32 +271,37 @@ const MainCard = () => {
               </SelectTrigger>
               <SelectContent className="bg-white/80 backdrop-blur-3xl border-gray-200 rounded-2xl">
                 <SelectItem value="Ideas2Impact" className="text-black hover:bg-gray-100 rounded-xl py-2">Ideas2Impact</SelectItem>
+                <SelectItem value="Daytona" className="text-black hover:bg-gray-100 rounded-xl py-2">Daytona</SelectItem>
+                <SelectItem value="Emsphere" className="text-black hover:bg-gray-100 rounded-xl py-2">Emsphere</SelectItem>
+                <SelectItem value="Ampersand" className="text-black hover:bg-gray-100 rounded-xl py-2">Ampersand</SelectItem>
                 <SelectItem value="Other" className="text-black hover:bg-gray-100 rounded-xl py-2">Other</SelectItem>
               </SelectContent>
             </Select>
           </div>
           
-          {/* References Dropdown */}
-          <div className="space-y-2">
-            <label htmlFor="referralSource" className="block text-base font-semibold text-black" style={{ fontFamily: 'var(--font-fustat)' }}>
-              How did you hear about us?
-            </label>
-            <Select onValueChange={(value) => setValue("referralSource", value)}>
-              <SelectTrigger className={`w-full px-6 py-8 bg-black/5 rounded-full text-black pointer-events-auto shadow-none ${
-                errors.referralSource ? 'border border-red-500' : ''
-              }`}>
-                <SelectValue placeholder={errors.referralSource?.message || "Select how you found us"} />
-              </SelectTrigger>
-              <SelectContent className="bg-white/80 backdrop-blur-3xl border-gray-200 rounded-2xl">
-                <SelectItem value="google-search" className="text-black hover:bg-gray-100 rounded-xl py-2">Google/Search Engine</SelectItem>
-                <SelectItem value="social-media" className="text-black hover:bg-gray-100 rounded-xl py-2">Social Media</SelectItem>
-                <SelectItem value="event" className="text-black hover:bg-gray-100 rounded-xl py-2">Event</SelectItem>
-                <SelectItem value="community" className="text-black hover:bg-gray-100 rounded-xl py-2">Community</SelectItem>
-                <SelectItem value="newsletter" className="text-black hover:bg-gray-100 rounded-xl py-2">Newsletter</SelectItem>
-                <SelectItem value="work-recommendation" className="text-black hover:bg-gray-100 rounded-xl py-2">Work Recommendation</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          {/* References Dropdown - Only show when "Other" is selected */}
+          {referenceValue === "Other" && (
+            <div className="space-y-2">
+              <label htmlFor="referralSource" className="block text-base font-semibold text-black" style={{ fontFamily: 'var(--font-fustat)' }}>
+                How did you hear about us?
+              </label>
+              <Select onValueChange={(value) => setValue("referralSource", value)}>
+                <SelectTrigger className={`w-full px-6 py-8 bg-black/5 rounded-full text-black pointer-events-auto shadow-none ${
+                  errors.referralSource ? 'border border-red-500' : ''
+                }`}>
+                  <SelectValue placeholder={errors.referralSource?.message || "Select how you found us"} />
+                </SelectTrigger>
+                <SelectContent className="bg-white/80 backdrop-blur-3xl border-gray-200 rounded-2xl">
+                  <SelectItem value="google-search" className="text-black hover:bg-gray-100 rounded-xl py-2">Google/Search Engine</SelectItem>
+                  <SelectItem value="social-media" className="text-black hover:bg-gray-100 rounded-xl py-2">Social Media</SelectItem>
+                  <SelectItem value="event" className="text-black hover:bg-gray-100 rounded-xl py-2">Event</SelectItem>
+                  <SelectItem value="community" className="text-black hover:bg-gray-100 rounded-xl py-2">Community</SelectItem>
+                  <SelectItem value="newsletter" className="text-black hover:bg-gray-100 rounded-xl py-2">Newsletter</SelectItem>
+                  <SelectItem value="work-recommendation" className="text-black hover:bg-gray-100 rounded-xl py-2">Work Recommendation</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
           
           {/* Submit Button */}
           <Button

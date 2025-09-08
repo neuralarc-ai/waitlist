@@ -261,7 +261,7 @@ const MainCard = () => {
           {/* Reference Dropdown */}
           <div className="space-y-2">
             <label htmlFor="reference" className="block text-base font-semibold text-black" style={{ fontFamily: 'var(--font-fustat)' }}>
-              How did you hear about us?
+              References
             </label>
             <Select onValueChange={(value) => setValue("reference", value)}>
               <SelectTrigger className={`w-full px-6 py-8 bg-black/5 rounded-full text-black pointer-events-auto shadow-none ${
@@ -279,7 +279,7 @@ const MainCard = () => {
           {/* References Dropdown */}
           <div className="space-y-2">
             <label htmlFor="referralSource" className="block text-base font-semibold text-black" style={{ fontFamily: 'var(--font-fustat)' }}>
-              References
+              How did you hear about us?
             </label>
             <Select onValueChange={(value) => setValue("referralSource", value)}>
               <SelectTrigger className={`w-full px-6 py-8 bg-black/5 rounded-full text-black pointer-events-auto shadow-none ${

@@ -216,7 +216,7 @@ const WaitlistFormDialog = ({ open, onOpenChange }: WaitlistFormDialogProps) => 
           
           <div className="space-y-2">
             <Label htmlFor="reference" className="text-sm font-medium text-gray-700">
-              How did you hear about us?
+              References
             </Label>
             <Input
               id="reference"
@@ -231,7 +231,7 @@ const WaitlistFormDialog = ({ open, onOpenChange }: WaitlistFormDialogProps) => 
           
           <div className="space-y-2">
             <Label htmlFor="referralSource" className="text-sm font-medium text-gray-700">
-              References
+              How did you hear about us?
             </Label>
             <Select onValueChange={handleSelectChange}>
               <SelectTrigger className="bg-white/80 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20">

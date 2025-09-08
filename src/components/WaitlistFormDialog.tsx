@@ -28,6 +28,7 @@ interface WaitlistFormDialogProps {
 
 const WaitlistFormDialog = ({ open, onOpenChange }: WaitlistFormDialogProps) => {
   const { toast } = useToast()
+  const [showThankYou, setShowThankYou] = useState(false)
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -41,6 +42,16 @@ const WaitlistFormDialog = ({ open, onOpenChange }: WaitlistFormDialogProps) => 
     e.preventDefault()
     
     try {
+      // Check if Supabase is properly configured
+      if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+        toast({
+          variant: "destructive",
+          title: "Configuration Error",
+          description: "Supabase is not properly configured. Please contact support.",
+        })
+        return
+      }
+      
       const { error } = await supabase
         .from('waitlist')
         .insert([
@@ -74,17 +85,13 @@ const WaitlistFormDialog = ({ open, onOpenChange }: WaitlistFormDialogProps) => 
             description: error.message || 'Unknown error occurred',
           })
         }
-      } else {
-        console.log('Form submitted successfully!')
-        toast({
-          variant: "success",
-          title: "Welcome to the Waitlist!",
-          description: "Thank you for joining the waitlist. We'll notify you when Helium is ready.",
-        })
-        // Reset form and close dialog
-        setFormData({ fullName: "", email: "", company: "", reference: "", referralSource: "", referralSourceOther: "" })
-        onOpenChange(false)
-      }
+        } else {
+          console.log('Form submitted successfully!')
+          // Show thank you message instead of toast
+          setShowThankYou(true)
+          // Reset form data
+          setFormData({ fullName: "", email: "", company: "", reference: "", referralSource: "", referralSourceOther: "" })
+        }
     } catch (error) {
       console.error('Unexpected error:', error)
       toast({
@@ -108,19 +115,57 @@ const WaitlistFormDialog = ({ open, onOpenChange }: WaitlistFormDialogProps) => 
     setFormData(prev => ({ ...prev, referralSourceOther: e.target.value }))
   }
 
+  const handleOkayClick = () => {
+    setShowThankYou(false)
+    onOpenChange(false)
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px] bg-white/10 backdrop-blur-3xl border-[0.5px] border-white/5">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-center bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            Join the Waitlist
-          </DialogTitle>
-          <DialogDescription className="text-center text-gray-600">
-            Be the first to experience the future of AI orchestration
-          </DialogDescription>
-        </DialogHeader>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
+        {showThankYou ? (
+          // Thank You Message
+          <div className="space-y-6">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold text-center bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                Welcome to Helium AI!
+              </DialogTitle>
+            </DialogHeader>
+            
+            <div className="space-y-4 text-center">
+              <p className="text-gray-700 leading-relaxed">
+                Thank you for joining the Helium AI waitlist and for your patience while we build something extraordinary. Your enthusiasm means the world to us.
+              </p>
+              
+              <p className="text-gray-700 leading-relaxed">
+                We are working hard to ensure that your first experience with Helium is smooth, powerful, and unforgettable. Your invite code will be landing in your inbox very soon, and you will be among the first to explore how Helium can transform your workflows and supercharge productivity.
+              </p>
+              
+              <p className="text-gray-700 leading-relaxed">
+                Stay tuned. The future of AI for business is closer than ever, and you are part of it.
+              </p>
+            </div>
+            
+            <Button 
+              onClick={handleOkayClick}
+              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium py-2.5 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl"
+            >
+              Okay
+            </Button>
+          </div>
+        ) : (
+          // Form Content
+          <>
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold text-center bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                Join the Waitlist
+              </DialogTitle>
+              <DialogDescription className="text-center text-gray-600">
+                Be the first to experience the future of AI orchestration
+              </DialogDescription>
+            </DialogHeader>
+            
+            <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="fullName" className="text-sm font-medium text-gray-700">
               Full Name
@@ -219,6 +264,8 @@ const WaitlistFormDialog = ({ open, onOpenChange }: WaitlistFormDialogProps) => 
             Join Waitlist
           </Button>
         </form>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   )

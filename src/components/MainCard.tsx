@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React, { useState } from "react"
 import Image from "next/image"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
+import { FireworksBackground } from "@/components/ui/fireworks-background"
 
 // Zod validation schema
 const formSchema = z.object({
@@ -30,6 +31,7 @@ type FormData = z.infer<typeof formSchema>
 
 const MainCard = () => {
   const { toast } = useToast()
+  const [showThankYou, setShowThankYou] = useState(false)
   const {
     register,
     handleSubmit,
@@ -46,6 +48,16 @@ const MainCard = () => {
   const onSubmit = async (data: FormData) => {
     try {
       console.log('Form data being submitted:', data)
+      
+      // Check if Supabase is properly configured
+      if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+        toast({
+          variant: "destructive",
+          title: "Configuration Error",
+          description: "Supabase is not properly configured. Please contact support.",
+        })
+        return
+      }
       
       const { error } = await supabase
         .from('waitlist')
@@ -82,13 +94,8 @@ const MainCard = () => {
         }
       } else {
         console.log('Form submitted successfully!')
-        toast({
-          variant: "success",
-          title: "Welcome to the Waitlist!",
-          description: "Thank you for joining the waitlist. We'll notify you when Helium is ready.",
-        })
-        // Reset form after successful submission
-        window.location.reload()
+        // Show thank you message instead of toast
+        setShowThankYou(true)
       }
     } catch (error) {
       console.error('Unexpected error:', error)
@@ -99,9 +106,71 @@ const MainCard = () => {
       })
     }
   }
+
+  const handleOkayClick = () => {
+    setShowThankYou(false)
+    window.location.reload()
+  }
+
   return (
-    <div className="relative w-full max-w-2xl mx-auto pointer-events-none">
-      {/* Main Card with Background Image */}
+    <>
+      {showThankYou && (
+        <FireworksBackground
+          className="fixed inset-0 z-50"
+          fireworkSpeed={{ min: 8, max: 16 }}
+          fireworkSize={{ min: 4, max: 10 }}
+          particleSpeed={{ min: 4, max: 14 }}
+          particleSize={{ min: 2, max: 10 }}
+        />
+      )}
+      <div className="relative w-full max-w-2xl mx-auto pointer-events-none">
+      {showThankYou ? (
+        // Thank You Message
+        <div className="relative bg-white rounded-3xl shadow-2xl p-8 text-center pointer-events-auto z-50">
+          <div className="flex items-center justify-center w-full mb-8">
+            <div className="invert">
+              <Image
+                src="/assets/logo-dark.svg"
+                alt="Helium Logo"
+                width={40}
+                height={40}
+                className="mr-3"
+              />
+            </div>
+            <h1 className="text-2xl font-bold text-black" style={{ fontFamily: 'var(--font-fustat)' }}>
+              Helium
+            </h1>
+          </div>
+          
+          <h2 className="text-2xl font-bold text-black mb-6" style={{ fontFamily: 'var(--font-fustat)' }}>
+            Welcome to Helium AI!
+          </h2>
+          
+          <div className="space-y-4 text-center mb-8">
+            <p className="text-gray-700 leading-relaxed">
+              Thank you for joining the Helium AI waitlist and for your patience while we build something extraordinary. Your enthusiasm means the world to us.
+            </p>
+            
+            <p className="text-gray-700 leading-relaxed">
+              We are working hard to ensure that your first experience with Helium is smooth, powerful, and unforgettable. Your invite code will be landing in your inbox very soon, and you will be among the first to explore how Helium can transform your workflows and supercharge productivity.
+            </p>
+            
+            <p className="text-gray-700 leading-relaxed">
+              Stay tuned. The future of AI for business is closer than ever, and you are part of it.
+            </p>
+          </div>
+          
+          <Button 
+            onClick={handleOkayClick}
+            className="w-full bg-black text-white hover:bg-black/80 cursor-pointer font-semibold py-8 px-6 rounded-full transition-all duration-300"
+            style={{ fontFamily: 'var(--font-fustat)' }}
+          >
+            Okay
+          </Button>
+        </div>
+      ) : (
+        <>
+          {/* Main Card with Background Image */}
       <div 
         className="relative rounded-3xl shadow-2xl pointer-events-none overflow-hidden p-8 pb-0 pt-12"
         style={{
@@ -240,7 +309,10 @@ const MainCard = () => {
           </form>
         </div>
       </div>
-    </div>
+        </>
+      )}
+      </div>
+    </>
   )
 }
 

@@ -201,7 +201,7 @@ const WaitlistFormDialog = ({ open, onOpenChange }: WaitlistFormDialogProps) => 
             <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="fullName" className="text-sm font-medium text-gray-700">
-              Full Name
+              Full Name <span className="text-red-500">*</span>
             </Label>
             <Input
               id="fullName"
@@ -217,7 +217,7 @@ const WaitlistFormDialog = ({ open, onOpenChange }: WaitlistFormDialogProps) => 
           
           <div className="space-y-2">
             <Label htmlFor="phoneNumber" className="text-sm font-medium text-gray-700">
-              Phone Number
+              Phone Number <span className="text-red-500">*</span>
             </Label>
             <div className="flex gap-2">
               <div className="w-32">
@@ -256,7 +256,7 @@ const WaitlistFormDialog = ({ open, onOpenChange }: WaitlistFormDialogProps) => 
           
           <div className="space-y-2">
             <Label htmlFor="email" className="text-sm font-medium text-gray-700">
-              Email Address
+              Email Address <span className="text-red-500">*</span>
             </Label>
             <Input
               id="email"
@@ -291,7 +291,7 @@ const WaitlistFormDialog = ({ open, onOpenChange }: WaitlistFormDialogProps) => 
           
           <div className="space-y-2">
             <Label htmlFor="company" className="text-sm font-medium text-gray-700">
-              Company
+              Company <span className="text-red-500">*</span>
             </Label>
             <Input
               id="company"
@@ -307,7 +307,7 @@ const WaitlistFormDialog = ({ open, onOpenChange }: WaitlistFormDialogProps) => 
           
           <div className="space-y-2">
             <Label htmlFor="reference" className="text-sm font-medium text-gray-700">
-              References
+              References <span className="text-red-500">*</span>
             </Label>
             <Select onValueChange={handleReferenceChange}>
               <SelectTrigger className="bg-white/80 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20">

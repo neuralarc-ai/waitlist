@@ -227,7 +227,7 @@ const MainCard = () => {
           {/* Name Field */}
           <div className="space-y-2">
             <label htmlFor="fullName" className="block text-base font-semibold text-black" style={{ fontFamily: 'var(--font-fustat)' }}>
-              Full Name
+              Full Name <span className="text-red-500">*</span>
             </label>
             <div className="relative">
               <input
@@ -245,40 +245,44 @@ const MainCard = () => {
           {/* Phone Number Field */}
           <div className="space-y-2">
             <label htmlFor="phoneNumber" className="block text-base font-semibold text-black" style={{ fontFamily: 'var(--font-fustat)' }}>
-              Phone Number
+              Phone Number <span className="text-red-500">*</span>
             </label>
             <div className="flex gap-2">
               <div className="w-32">
-                <Select onValueChange={(value) => setValue("countryCode", value)}>
-                  <SelectTrigger className={`px-4 py-6 bg-black/5 rounded-full text-black pointer-events-auto shadow-none ${
-                    errors.countryCode ? 'border border-red-500' : ''
-                  }`}>
-                    <SelectValue placeholder="Code" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white/80 backdrop-blur-3xl border-gray-200 rounded-2xl">
-                    <SelectItem value="+1" className="text-black hover:bg-gray-100 rounded-xl py-2">🇺🇸 +1</SelectItem>
-                    <SelectItem value="+44" className="text-black hover:bg-gray-100 rounded-xl py-2">🇬🇧 +44</SelectItem>
-                    <SelectItem value="+91" className="text-black hover:bg-gray-100 rounded-xl py-2">🇮🇳 +91</SelectItem>
-                    <SelectItem value="+86" className="text-black hover:bg-gray-100 rounded-xl py-2">🇨🇳 +86</SelectItem>
-                    <SelectItem value="+49" className="text-black hover:bg-gray-100 rounded-xl py-2">🇩🇪 +49</SelectItem>
-                    <SelectItem value="+33" className="text-black hover:bg-gray-100 rounded-xl py-2">🇫🇷 +33</SelectItem>
-                    <SelectItem value="+81" className="text-black hover:bg-gray-100 rounded-xl py-2">🇯🇵 +81</SelectItem>
-                    <SelectItem value="+61" className="text-black hover:bg-gray-100 rounded-xl py-2">🇦🇺 +61</SelectItem>
-                    <SelectItem value="+55" className="text-black hover:bg-gray-100 rounded-xl py-2">🇧🇷 +55</SelectItem>
-                    <SelectItem value="+7" className="text-black hover:bg-gray-100 rounded-xl py-2">🇷🇺 +7</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="relative">
+                  <Select onValueChange={(value) => setValue("countryCode", value)}>
+                    <SelectTrigger className={`w-full px-6 py-9 bg-black/5 rounded-full text-black pointer-events-auto shadow-none ${
+                      errors.countryCode ? 'border border-red-500' : ''
+                    }`}>
+                      <SelectValue placeholder="Code" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white/80 backdrop-blur-3xl border-gray-200 rounded-2xl">
+                      <SelectItem value="+1" className="text-black hover:bg-gray-100 rounded-xl py-2">🇺🇸 +1</SelectItem>
+                      <SelectItem value="+44" className="text-black hover:bg-gray-100 rounded-xl py-2">🇬🇧 +44</SelectItem>
+                      <SelectItem value="+91" className="text-black hover:bg-gray-100 rounded-xl py-2">🇮🇳 +91</SelectItem>
+                      <SelectItem value="+86" className="text-black hover:bg-gray-100 rounded-xl py-2">🇨🇳 +86</SelectItem>
+                      <SelectItem value="+49" className="text-black hover:bg-gray-100 rounded-xl py-2">🇩🇪 +49</SelectItem>
+                      <SelectItem value="+33" className="text-black hover:bg-gray-100 rounded-xl py-2">🇫🇷 +33</SelectItem>
+                      <SelectItem value="+81" className="text-black hover:bg-gray-100 rounded-xl py-2">🇯🇵 +81</SelectItem>
+                      <SelectItem value="+61" className="text-black hover:bg-gray-100 rounded-xl py-2">🇦🇺 +61</SelectItem>
+                      <SelectItem value="+55" className="text-black hover:bg-gray-100 rounded-xl py-2">🇧🇷 +55</SelectItem>
+                      <SelectItem value="+7" className="text-black hover:bg-gray-100 rounded-xl py-2">🇷🇺 +7</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               <div className="flex-1">
-                <input
-                  {...register("phoneNumber")}
-                  type="tel"
-                  id="phoneNumber"
-                  placeholder={errors.phoneNumber?.message || "Enter phone number"}
-                  className={`w-full px-6 py-6 bg-black/5 rounded-full text-black placeholder-black/50 pointer-events-auto ${
-                    errors.phoneNumber ? 'placeholder-red-500 border border-red-500' : ''
-                  }`}
-                />
+                <div className="relative">
+                  <input
+                    {...register("phoneNumber")}
+                    type="tel"
+                    id="phoneNumber"
+                    placeholder={errors.phoneNumber?.message || "Enter phone number"}
+                    className={`w-full px-6 py-6 bg-black/5 rounded-full text-black placeholder-black/50 pointer-events-auto ${
+                      errors.phoneNumber ? 'placeholder-red-500 border border-red-500' : ''
+                    }`}
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -287,7 +291,7 @@ const MainCard = () => {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <label htmlFor="company" className="block text-base font-semibold text-black" style={{ fontFamily: 'var(--font-fustat)' }}>
-                Company
+                Company <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <input
@@ -303,7 +307,7 @@ const MainCard = () => {
             </div>
             <div className="space-y-2">
               <label htmlFor="email" className="block text-base font-semibold text-black" style={{ fontFamily: 'var(--font-fustat)' }}>
-                Email
+                Email <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <input
@@ -341,7 +345,7 @@ const MainCard = () => {
           {/* Reference Dropdown */}
           <div className="space-y-2">
             <label htmlFor="reference" className="block text-base font-semibold text-black" style={{ fontFamily: 'var(--font-fustat)' }}>
-              References
+              References <span className="text-red-500">*</span>
             </label>
             <Select onValueChange={(value) => setValue("reference", value)}>
               <SelectTrigger className={`w-full px-6 py-8 bg-black/5 rounded-full text-black pointer-events-auto shadow-none ${

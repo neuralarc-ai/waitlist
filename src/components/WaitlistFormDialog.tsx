@@ -31,6 +31,8 @@ const WaitlistFormDialog = ({ open, onOpenChange }: WaitlistFormDialogProps) => 
   const [showThankYou, setShowThankYou] = useState(false)
   const [formData, setFormData] = useState({
     fullName: "",
+    countryCode: "",
+    phoneNumber: "",
     email: "",
     company: "",
     reference: "",
@@ -42,6 +44,27 @@ const WaitlistFormDialog = ({ open, onOpenChange }: WaitlistFormDialogProps) => 
     e.preventDefault()
     
     try {
+      // Validate company email
+      const personalEmailDomains = [
+        'gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'aol.com',
+        'icloud.com', 'me.com', 'mac.com', 'live.com', 'msn.com',
+        'yahoo.co.uk', 'yahoo.ca', 'yahoo.com.au', 'hotmail.co.uk',
+        'hotmail.ca', 'hotmail.com.au', 'outlook.co.uk', 'outlook.ca',
+        'outlook.com.au', 'live.co.uk', 'live.ca', 'live.com.au',
+        'protonmail.com', 'tutanota.com', 'yandex.com', 'mail.ru',
+        'zoho.com', 'fastmail.com', 'hey.com'
+      ]
+      
+      const emailDomain = formData.email.split('@')[1]?.toLowerCase()
+      if (!emailDomain || personalEmailDomains.includes(emailDomain)) {
+        toast({
+          variant: "destructive",
+          title: "Invalid Email",
+          description: "Please use your company email address instead of a personal email.",
+        })
+        return
+      }
+      
       // Check if Supabase is properly configured
       if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
         toast({
@@ -57,6 +80,8 @@ const WaitlistFormDialog = ({ open, onOpenChange }: WaitlistFormDialogProps) => 
         .insert([
           {
             full_name: formData.fullName,
+            country_code: formData.countryCode,
+            phone_number: formData.phoneNumber,
             company: formData.company,
             email: formData.email,
             reference: formData.reference,
@@ -90,7 +115,7 @@ const WaitlistFormDialog = ({ open, onOpenChange }: WaitlistFormDialogProps) => 
           // Show thank you message instead of toast
           setShowThankYou(true)
           // Reset form data
-          setFormData({ fullName: "", email: "", company: "", reference: "", referralSource: "", referralSourceOther: "" })
+          setFormData({ fullName: "", countryCode: "", phoneNumber: "", email: "", company: "", reference: "", referralSource: "", referralSourceOther: "" })
         }
     } catch (error) {
       console.error('Unexpected error:', error)
@@ -105,6 +130,14 @@ const WaitlistFormDialog = ({ open, onOpenChange }: WaitlistFormDialogProps) => 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
+  }
+
+  const handleCountryCodeChange = (value: string) => {
+    setFormData(prev => ({ ...prev, countryCode: value }))
+  }
+
+  const handleReferenceChange = (value: string) => {
+    setFormData(prev => ({ ...prev, reference: value }))
   }
 
   const handleSelectChange = (value: string) => {
@@ -183,6 +216,45 @@ const WaitlistFormDialog = ({ open, onOpenChange }: WaitlistFormDialogProps) => 
           </div>
           
           <div className="space-y-2">
+            <Label htmlFor="phoneNumber" className="text-sm font-medium text-gray-700">
+              Phone Number
+            </Label>
+            <div className="flex gap-2">
+              <div className="w-32">
+                <Select onValueChange={handleCountryCodeChange}>
+                  <SelectTrigger className="bg-white/80 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20">
+                    <SelectValue placeholder="Code" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white/80 backdrop-blur-3xl border-gray-200">
+                    <SelectItem value="+1">🇺🇸 +1</SelectItem>
+                    <SelectItem value="+44">🇬🇧 +44</SelectItem>
+                    <SelectItem value="+91">🇮🇳 +91</SelectItem>
+                    <SelectItem value="+86">🇨🇳 +86</SelectItem>
+                    <SelectItem value="+49">🇩🇪 +49</SelectItem>
+                    <SelectItem value="+33">🇫🇷 +33</SelectItem>
+                    <SelectItem value="+81">🇯🇵 +81</SelectItem>
+                    <SelectItem value="+61">🇦🇺 +61</SelectItem>
+                    <SelectItem value="+55">🇧🇷 +55</SelectItem>
+                    <SelectItem value="+7">🇷🇺 +7</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex-1">
+                <Input
+                  id="phoneNumber"
+                  name="phoneNumber"
+                  type="tel"
+                  placeholder="Enter phone number"
+                  value={formData.phoneNumber}
+                  onChange={handleInputChange}
+                  required
+                  className="bg-white/80 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20"
+                />
+              </div>
+            </div>
+          </div>
+          
+          <div className="space-y-2">
             <Label htmlFor="email" className="text-sm font-medium text-gray-700">
               Email Address
             </Label>
@@ -196,6 +268,25 @@ const WaitlistFormDialog = ({ open, onOpenChange }: WaitlistFormDialogProps) => 
               required
               className="bg-white/80 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20"
             />
+            {formData.email && (() => {
+              const personalEmailDomains = [
+                'gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'aol.com',
+                'icloud.com', 'me.com', 'mac.com', 'live.com', 'msn.com',
+                'yahoo.co.uk', 'yahoo.ca', 'yahoo.com.au', 'hotmail.co.uk',
+                'hotmail.ca', 'hotmail.com.au', 'outlook.co.uk', 'outlook.ca',
+                'outlook.com.au', 'live.co.uk', 'live.ca', 'live.com.au',
+                'protonmail.com', 'tutanota.com', 'yandex.com', 'mail.ru',
+                'zoho.com', 'fastmail.com', 'hey.com'
+              ]
+              const emailDomain = formData.email.split('@')[1]?.toLowerCase()
+              const isPersonalEmail = emailDomain && personalEmailDomains.includes(emailDomain)
+              
+              return isPersonalEmail ? (
+                <p className="text-xs text-red-500 mt-1">
+                  Only company emails are allowed (no Gmail, Yahoo, etc.)
+                </p>
+              ) : null
+            })()}
           </div>
           
           <div className="space-y-2">
@@ -218,44 +309,38 @@ const WaitlistFormDialog = ({ open, onOpenChange }: WaitlistFormDialogProps) => 
             <Label htmlFor="reference" className="text-sm font-medium text-gray-700">
               References
             </Label>
-            <Input
-              id="reference"
-              name="reference"
-              type="text"
-              placeholder="Social media, friend, search, etc."
-              value={formData.reference}
-              onChange={handleInputChange}
-              className="bg-white/80 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20"
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="referralSource" className="text-sm font-medium text-gray-700">
-              How did you hear about us?
-            </Label>
-            <Select onValueChange={handleSelectChange}>
+            <Select onValueChange={handleReferenceChange}>
               <SelectTrigger className="bg-white/80 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20">
-                <SelectValue placeholder="Select how you found us" />
+                <SelectValue placeholder="Select an option" />
               </SelectTrigger>
               <SelectContent className="bg-white/80 backdrop-blur-3xl border-gray-200">
-                <SelectItem value="google-search">Google/Search Engine</SelectItem>
-                <SelectItem value="social-media">Social Media</SelectItem>
-                <SelectItem value="event">Event</SelectItem>
-                <SelectItem value="community">Community</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
+                <SelectItem value="Ideas2Impact">Ideas2Impact Hub</SelectItem>
+                <SelectItem value="Other">Other</SelectItem>
               </SelectContent>
             </Select>
-            {formData.referralSource === "other" && (
-              <Input
-                name="referralSourceOther"
-                type="text"
-                placeholder="Please specify..."
-                value={formData.referralSourceOther}
-                onChange={handleOtherInputChange}
-                className="bg-white/80 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20"
-              />
-            )}
           </div>
+          
+          {/* How did you hear about us? - Only show when "Other" is selected */}
+          {formData.reference === "Other" && (
+            <div className="space-y-2">
+              <Label htmlFor="referralSource" className="text-sm font-medium text-gray-700">
+                How did you hear about us?
+              </Label>
+              <Select onValueChange={handleSelectChange}>
+                <SelectTrigger className="bg-white/80 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20">
+                  <SelectValue placeholder="Select how you found us" />
+                </SelectTrigger>
+                <SelectContent className="bg-white/80 backdrop-blur-3xl border-gray-200">
+                  <SelectItem value="google-search">Google/Search Engine</SelectItem>
+                  <SelectItem value="social-media">Social Media</SelectItem>
+                  <SelectItem value="event">Event</SelectItem>
+                  <SelectItem value="community">Community</SelectItem>
+                  <SelectItem value="newsletter">Newsletter</SelectItem>
+                  <SelectItem value="work-recommendation">Work Recommendation</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
           
           <Button 
             type="submit" 

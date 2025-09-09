@@ -20,8 +20,24 @@ import { FireworksBackground } from "@/components/ui/fireworks-background"
 // Zod validation schema
 const formSchema = z.object({
   fullName: z.string().min(1, "Full name is required").min(2, "Full name must be at least 2 characters"),
+  countryCode: z.string().min(1, "Country code is required"),
+  phoneNumber: z.string().min(1, "Phone number is required").regex(/^[0-9]{7,15}$/, "Please enter a valid phone number (7-15 digits)"),
   company: z.string().min(1, "Company is required").min(2, "Company name must be at least 2 characters"),
-  email: z.string().email("Please enter a valid email address"),
+  email: z.string()
+    .email("Please enter a valid email address")
+    .refine((email) => {
+      const personalEmailDomains = [
+        'gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'aol.com',
+        'icloud.com', 'me.com', 'mac.com', 'live.com', 'msn.com',
+        'yahoo.co.uk', 'yahoo.ca', 'yahoo.com.au', 'hotmail.co.uk',
+        'hotmail.ca', 'hotmail.com.au', 'outlook.co.uk', 'outlook.ca',
+        'outlook.com.au', 'live.co.uk', 'live.ca', 'live.com.au',
+        'protonmail.com', 'tutanota.com', 'yandex.com', 'mail.ru',
+        'zoho.com', 'fastmail.com', 'hey.com'
+      ]
+      const domain = email.split('@')[1]?.toLowerCase()
+      return domain && !personalEmailDomains.includes(domain)
+    }, "Please use your company email address"),
   reference: z.string().min(1, "Please select how you heard about us"),
   referralSource: z.string().optional(),
   referralSourceOther: z.string().optional(),
@@ -45,6 +61,8 @@ const MainCard = () => {
 
   const referralSourceValue = watch("referralSource")
   const referenceValue = watch("reference")
+  const emailValue = watch("email")
+  const countryCodeValue = watch("countryCode")
 
   const onSubmit = async (data: FormData) => {
     try {
@@ -65,6 +83,8 @@ const MainCard = () => {
         .insert([
           {
             full_name: data.fullName,
+            country_code: data.countryCode,
+            phone_number: data.phoneNumber,
             company: data.company,
             email: data.email,
             reference: data.reference,
@@ -222,6 +242,47 @@ const MainCard = () => {
             </div>
           </div>
           
+          {/* Phone Number Field */}
+          <div className="space-y-2">
+            <label htmlFor="phoneNumber" className="block text-base font-semibold text-black" style={{ fontFamily: 'var(--font-fustat)' }}>
+              Phone Number
+            </label>
+            <div className="flex gap-2">
+              <div className="w-32">
+                <Select onValueChange={(value) => setValue("countryCode", value)}>
+                  <SelectTrigger className={`px-4 py-6 bg-black/5 rounded-full text-black pointer-events-auto shadow-none ${
+                    errors.countryCode ? 'border border-red-500' : ''
+                  }`}>
+                    <SelectValue placeholder="Code" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white/80 backdrop-blur-3xl border-gray-200 rounded-2xl">
+                    <SelectItem value="+1" className="text-black hover:bg-gray-100 rounded-xl py-2">🇺🇸 +1</SelectItem>
+                    <SelectItem value="+44" className="text-black hover:bg-gray-100 rounded-xl py-2">🇬🇧 +44</SelectItem>
+                    <SelectItem value="+91" className="text-black hover:bg-gray-100 rounded-xl py-2">🇮🇳 +91</SelectItem>
+                    <SelectItem value="+86" className="text-black hover:bg-gray-100 rounded-xl py-2">🇨🇳 +86</SelectItem>
+                    <SelectItem value="+49" className="text-black hover:bg-gray-100 rounded-xl py-2">🇩🇪 +49</SelectItem>
+                    <SelectItem value="+33" className="text-black hover:bg-gray-100 rounded-xl py-2">🇫🇷 +33</SelectItem>
+                    <SelectItem value="+81" className="text-black hover:bg-gray-100 rounded-xl py-2">🇯🇵 +81</SelectItem>
+                    <SelectItem value="+61" className="text-black hover:bg-gray-100 rounded-xl py-2">🇦🇺 +61</SelectItem>
+                    <SelectItem value="+55" className="text-black hover:bg-gray-100 rounded-xl py-2">🇧🇷 +55</SelectItem>
+                    <SelectItem value="+7" className="text-black hover:bg-gray-100 rounded-xl py-2">🇷🇺 +7</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex-1">
+                <input
+                  {...register("phoneNumber")}
+                  type="tel"
+                  id="phoneNumber"
+                  placeholder={errors.phoneNumber?.message || "Enter phone number"}
+                  className={`w-full px-6 py-6 bg-black/5 rounded-full text-black placeholder-black/50 pointer-events-auto ${
+                    errors.phoneNumber ? 'placeholder-red-500 border border-red-500' : ''
+                  }`}
+                />
+              </div>
+            </div>
+          </div>
+          
           {/* Company and Email Fields - Side by Side */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -255,6 +316,25 @@ const MainCard = () => {
                   }`}
                 />
               </div>
+              {emailValue && (() => {
+                const personalEmailDomains = [
+                  'gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'aol.com',
+                  'icloud.com', 'me.com', 'mac.com', 'live.com', 'msn.com',
+                  'yahoo.co.uk', 'yahoo.ca', 'yahoo.com.au', 'hotmail.co.uk',
+                  'hotmail.ca', 'hotmail.com.au', 'outlook.co.uk', 'outlook.ca',
+                  'outlook.com.au', 'live.co.uk', 'live.ca', 'live.com.au',
+                  'protonmail.com', 'tutanota.com', 'yandex.com', 'mail.ru',
+                  'zoho.com', 'fastmail.com', 'hey.com'
+                ]
+                const emailDomain = emailValue.split('@')[1]?.toLowerCase()
+                const isPersonalEmail = emailDomain && personalEmailDomains.includes(emailDomain)
+                
+                return isPersonalEmail ? (
+                  <p className="text-xs text-red-500 mt-1" style={{ fontFamily: 'var(--font-fustat)' }}>
+                    Only company emails are allowed (no Gmail, Yahoo, etc.)
+                  </p>
+                ) : null
+              })()}
             </div>
           </div>
           
@@ -270,10 +350,7 @@ const MainCard = () => {
                 <SelectValue placeholder={errors.reference?.message || "Select an option"} />
               </SelectTrigger>
               <SelectContent className="bg-white/80 backdrop-blur-3xl border-gray-200 rounded-2xl">
-                <SelectItem value="Ideas2Impact" className="text-black hover:bg-gray-100 rounded-xl py-2">Ideas2Impact</SelectItem>
-                <SelectItem value="Daytona" className="text-black hover:bg-gray-100 rounded-xl py-2">Daytona</SelectItem>
-                <SelectItem value="Emsphere" className="text-black hover:bg-gray-100 rounded-xl py-2">Emsphere</SelectItem>
-                <SelectItem value="Ampersand" className="text-black hover:bg-gray-100 rounded-xl py-2">Ampersand</SelectItem>
+                <SelectItem value="Ideas2Impact" className="text-black hover:bg-gray-100 rounded-xl py-2">Ideas2Impact Hub</SelectItem>
                 <SelectItem value="Other" className="text-black hover:bg-gray-100 rounded-xl py-2">Other</SelectItem>
               </SelectContent>
             </Select>
